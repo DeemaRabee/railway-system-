@@ -44,7 +44,7 @@ const axios = require('axios');
 const ApiError = require('../utils/apiError');
 const logger = require('../utils/logger');
 //https://ministry-system.onrender.com
-const MINISTRY_BASE_URL = 'http://localhost:8000/api/company'; // عنوان سستم الوزارة
+const MINISTRY_BASE_URL = 'https://railway-ministry-production.up.railway.app/api/company'; // عنوان سستم الوزارة
 const MINISTRY_API_KEY = process.env.MINISTRY_API_KEY;
 class MinistryService {
   static async verifyCompany(nationalId) {

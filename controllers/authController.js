@@ -346,11 +346,11 @@ exports.forgotPassword = async (req, res, next) => {
       .digest("hex");
 
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 mins
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${req.protocol}://${req.get("host")}/api/auth/resetpassword/${resetToken}`;
+    const resetUrl = `http://localhost:5173/auth/resetpassword/${resetToken}`;
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password.\n\nPlease make a PUT request to:\n\n${resetUrl}`;
 
     try {

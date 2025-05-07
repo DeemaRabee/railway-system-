@@ -1,12 +1,12 @@
 //console.log("company rout");
-const express = require('express');
-const { validate } = require('../middleware/validateRequest');
-const { protect, restrictTo } = require('../middleware/auth');
-const Joi = require('joi');
+const express = require("express");
+const { validate } = require("../middleware/validateRequest");
+const { protect, restrictTo } = require("../middleware/auth");
+const Joi = require("joi");
 
-const uploadImage = require('../middleware/uploadCompanyProfilePicture'); // لرفع صورة الشركة
-const uploadCompanyActivityReport = require('../middleware/uploadCompanyActivityReport'); // لرفع تقارير النشاط
-const uploadCompanyFinalReport = require('../middleware/uploadCompanyFinalReport'); // لرفع التقرير النهائي
+const uploadImage = require("../middleware/uploadCompanyProfilePicture"); // لرفع صورة الشركة
+const uploadCompanyActivityReport = require("../middleware/uploadCompanyActivityReport"); // لرفع تقارير النشاط
+const uploadCompanyFinalReport = require("../middleware/uploadCompanyFinalReport"); // لرفع التقرير النهائي
 
 const {
   getCompanies,
@@ -17,8 +17,9 @@ const {
   //getSingleApplication,
   updateApplicationStatus,
   submitActivityReport,
-  submitFinalReport
-} = require('../controllers/companyController');
+  submitFinalReport,
+  getCompanyProfile,
+} = require("../controllers/companyController");
 
 const router = express.Router();
 
@@ -28,11 +29,11 @@ const updateProfileSchema = Joi.object({
   name: Joi.string(),
   phone: Joi.string(),
   location: Joi.string(),
-  fieldOfWork: Joi.string()
+  fieldOfWork: Joi.string(),
 });
 
 const updateApplicationStatusSchema = Joi.object({
-  status: Joi.string().valid('APPROVED', 'REJECTED').required()
+  status: Joi.string().valid("APPROVED", "REJECTED").required(),
 });
 
 // —————————————————————————
@@ -47,39 +48,41 @@ router.use(protect);
 // —————————————————————————
 // ✅ مسارات الشركة
 router.put(
-  '/profile',
-  restrictTo('company'),
-  uploadImage.single('profilePicture'), // صورة البروفايل
+  "/profile",
+  restrictTo("company"),
+  uploadImage.single("profilePicture"), // صورة البروفايل
   validate(updateProfileSchema),
   updateProfile
 );
 
-router.get('/posts', restrictTo('company'), getCompanyPosts);
-router.get('/applications', restrictTo('company'), getCompanyApplications);
+router.get("/posts", restrictTo("company"), getCompanyPosts);
+router.get("/applications", restrictTo("company"), getCompanyApplications);
 //router.get('/applications/:id', restrictTo('company'), getSingleApplication);
 
 router.put(
-  '/applications/:id',
-  restrictTo('company'),
+  "/applications/:id",
+  restrictTo("company"),
   validate(updateApplicationStatusSchema),
   updateApplicationStatus
 );
 
 // ➡️ رفع تقرير نشاط
 router.post(
-  '/applications/:id/activity',
-  restrictTo('company'),
-  uploadCompanyActivityReport.single('activityReport'),
+  "/applications/:id/activity",
+  restrictTo("company"),
+  uploadCompanyActivityReport.single("activityReport"),
   submitActivityReport
 );
 
 // ➡️ رفع تقرير نهائي
 router.post(
-  '/applications/:id/final',
-  restrictTo('company'),
-  uploadCompanyFinalReport.single('finalReport'),
+  "/applications/:id/final",
+  restrictTo("company"),
+  uploadCompanyFinalReport.single("finalReport"),
   submitFinalReport
 );
+
+router.get("/profile", getCompanyProfile);
 
 module.exports = router;
 
@@ -174,10 +177,7 @@ module.exports = router;
 
 */
 
-
-
-
-//تعديل اخر نسخه 
+//تعديل اخر نسخه
 /*const express = require('express');
 const { validate } = require('../middleware/validateRequest');
 const { protect, restrictTo } = require('../middleware/auth');
@@ -252,28 +252,6 @@ router.post(
 module.exports = router;
 
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
 const express = require('express');

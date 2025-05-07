@@ -73,7 +73,6 @@ app.use(errorHandler);
 module.exports = app;*/
 
 //كود تعديل اخر نسخه
-
 const express = require("express");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
@@ -82,42 +81,46 @@ const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
 const cors = require("cors");
-const path = require("path"); // ✨ تمت الإضافة
+const path = require("path");
 const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
 app.get("/favicon.ico", (req, res) => res.status(204));
 
-// Enable CORS for all origins or specify allowed origins
+// Enable CORS for all origins
 app.use(
   cors({
-    origin: "*", // Adjust this to allow specific origins (e.g., 'http://localhost:3000')
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Secure HTTP headers using Helmet
+// ✅ Dynamic CSP based on environment
+const imgSources = [
+  "'self'",
+  "data:", // allow base64 (optional)
+  "http://localhost:5000", // for dev
+  "https://railway-system-production-1a43.up.railway.app", // production
+];
+
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        imgSrc: [
-          "'self'",
-          "https://railway-system-production-1a43.up.railway.app",
-        ], // Allow image domain
-        connectSrc: ["'self'"],
+        imgSrc: imgSources,
+        connectSrc: ["'self'", "http://localhost:5000"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         fontSrc: ["'self'"],
         objectSrc: ["'none'"],
       },
     },
-    crossOriginEmbedderPolicy: { policy: "require-corp" },
+    crossOriginEmbedderPolicy: false, // Disable this for now to simplify CORS handling
     crossOriginOpenerPolicy: { policy: "same-origin" },
-    crossOriginResourcePolicy: { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow images from other origins
   })
 );
 
@@ -126,24 +129,30 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Rate limiting for API requests
+// Rate limiting
 const limiter = rateLimit({
   max: 100,
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   message: "Too many requests from this IP, please try again in an hour!",
 });
 app.use("/api", limiter);
 
-// Body parser to read request bodies
+// Body parser
 app.use(express.json({ limit: "10kb" }));
 
-// Serve static files (uploads directory for images)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// ✅ Serve uploaded images statically
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    setHeaders: (res, path) => {
+      res.set("Access-Control-Allow-Origin", "*");
+      res.set("Cache-Control", "public, max-age=0");
+    },
+  })
+);
 
-// Sanitize data to prevent NoSQL injections
+// Sanitize data
 app.use(mongoSanitize());
-
-// Protect against XSS attacks
 app.use(xss());
 
 // Prevent HTTP Parameter Pollution

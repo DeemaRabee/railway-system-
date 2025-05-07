@@ -1,15 +1,14 @@
-
-
 // 📂 controllers/companyController.js (نسخة نهائية معدلة بدقة)
 //console.log("comp cont");
-const Company = require('../models/Company');
-const User = require('../models/User');
-const TrainingPost = require('../models/TrainingPost');
-const Application = require('../models/Application');
-const Student = require('../models/Student');
-const ApiError = require('../utils/apiError');
-const ApiResponse = require('../utils/apiResponse');
-const logger = require('../utils/logger');
+const Company = require("../models/Company");
+const User = require("../models/User");
+const TrainingPost = require("../models/TrainingPost");
+const Application = require("../models/Application");
+const Student = require("../models/Student");
+const ApiError = require("../utils/apiError");
+const ApiResponse = require("../utils/apiResponse");
+const logger = require("../utils/logger");
+const jwt = require("jsonwebtoken");
 
 // ———————————————————————————————————
 
@@ -38,16 +37,53 @@ const logger = require('../utils/logger');
   }
 };*/
 
+exports.getCompanyProfile = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(new ApiError(401, "Authorization token missing"));
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user and company
+    const user = await User.findById(decoded.id).select("email role");
+    if (!user || user.role !== "company") {
+      return next(new ApiError(403, "Access denied. Not a company account."));
+    }
+
+    const company = await Company.findOne({ user: user._id });
+    if (!company) {
+      return next(new ApiError(404, "Company profile not found"));
+    }
+
+    ApiResponse.success(res, "Company profile retrieved successfully", {
+      company,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    تعديل ملف الشركة
 // @route   PUT /api/companies/profile
 // @access  Private/Company
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { name, phone, location, fieldOfWork ,newPassword} = req.body;
+    const { name, phone, location, fieldOfWork, newPassword } = req.body;
     const company = await Company.findOne({ user: req.user.id });
-    if (!company) return next(new ApiError(404, 'Company profile not found'));
+    if (!company) return next(new ApiError(404, "Company profile not found"));
 
-    const user = await User.findById(req.user.id).select('+password');
+    const user = await User.findById(req.user.id).select("+password");
     // تحديث كلمة المرور إن وُجدت
     if (newPassword) {
       user.password = newPassword;
@@ -68,8 +104,12 @@ exports.updateProfile = async (req, res, next) => {
 
     await company.save();
 
-    logger.info(`Company profile updated: ${company.name} (${company.nationalId})`);
-    ApiResponse.success(res, 'Company profile updated successfully', { company });
+    logger.info(
+      `Company profile updated: ${company.name} (${company.nationalId})`
+    );
+    ApiResponse.success(res, "Company profile updated successfully", {
+      company,
+    });
   } catch (error) {
     next(error);
   }
@@ -94,20 +134,21 @@ exports.getCompanyPosts = async (req, res, next) => {
   try {
     const company = await Company.findOne({ user: req.user.id });
     if (!company) {
-      return next(new ApiError(404, 'Company not found for this user'));
+      return next(new ApiError(404, "Company not found for this user"));
     }
 
-    const posts = await TrainingPost.find({ company: company._id }).sort({ createdAt: -1 });
+    const posts = await TrainingPost.find({ company: company._id }).sort({
+      createdAt: -1,
+    });
 
-    ApiResponse.success(res, 'Training posts retrieved successfully', {
+    ApiResponse.success(res, "Training posts retrieved successfully", {
       count: posts.length,
-      posts
+      posts,
     });
   } catch (error) {
     next(error);
   }
 };
-
 
 // @desc    الحصول على جميع الطلبات لإعلانات الشركة
 // @route   GET /api/companies/applications
@@ -116,18 +157,22 @@ exports.getCompanyApplications = async (req, res, next) => {
   try {
     const company = await Company.findOne({ user: req.user.id });
     const posts = await TrainingPost.find({ company: company._id });
-    const postIds = posts.map(post => post._id);
+    const postIds = posts.map((post) => post._id);
 
-    const applications = await Application.find({ trainingPost: { $in: postIds } })
-      .populate('student', 'name universityId department')
-      .populate('trainingPost', 'title duration')
+    const applications = await Application.find({
+      trainingPost: { $in: postIds },
+    })
+      .populate("student", "name universityId department")
+      .populate("trainingPost", "title duration")
       .sort({ createdAt: -1 });
 
-    ApiResponse.success(res, 'Applications retrieved successfully', { count: applications.length, applications });
+    ApiResponse.success(res, "Applications retrieved successfully", {
+      count: applications.length,
+      applications,
+    });
   } catch (error) {
     next(error);
   }
-  
 };
 
 // @desc    تحديث حالة طلب (موافقة/رفض)
@@ -136,23 +181,29 @@ exports.getCompanyApplications = async (req, res, next) => {
 exports.updateApplicationStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    if (!['APPROVED', 'REJECTED'].includes(status)) {
-      return next(new ApiError(400, 'Invalid status'));
+    if (!["APPROVED", "REJECTED"].includes(status)) {
+      return next(new ApiError(400, "Invalid status"));
     }
 
-    const application = await Application.findById(req.params.id).populate('trainingPost');
-    if (!application) return next(new ApiError(404, 'Application not found'));
+    const application = await Application.findById(req.params.id).populate(
+      "trainingPost"
+    );
+    if (!application) return next(new ApiError(404, "Application not found"));
 
     const post = application.trainingPost;
     const company = await Company.findOne({ user: req.user.id });
     if (!company || post.company.toString() !== company._id.toString()) {
-      return next(new ApiError(403, 'Not authorized to update this application'));
+      return next(
+        new ApiError(403, "Not authorized to update this application")
+      );
     }
 
     application.status = status;
     await application.save();
 
-    ApiResponse.success(res, 'Application status updated successfully', { application });
+    ApiResponse.success(res, "Application status updated successfully", {
+      application,
+    });
   } catch (error) {
     next(error);
   }
@@ -163,15 +214,17 @@ exports.updateApplicationStatus = async (req, res, next) => {
 // @access  Private/Company
 exports.submitActivityReport = async (req, res, next) => {
   try {
-    if (!req.file) return next(new ApiError(400, 'No file uploaded'));
+    if (!req.file) return next(new ApiError(400, "No file uploaded"));
 
     const application = await Application.findById(req.params.id);
-    if (!application) return next(new ApiError(404, 'Application not found'));
+    if (!application) return next(new ApiError(404, "Application not found"));
 
     application.activityReports.push(req.file.path);
     await application.save();
 
-    ApiResponse.success(res, 'Activity report submitted successfully', { application });
+    ApiResponse.success(res, "Activity report submitted successfully", {
+      application,
+    });
   } catch (error) {
     next(error);
   }
@@ -182,65 +235,58 @@ exports.submitActivityReport = async (req, res, next) => {
 // @access  Private/Company
 exports.submitFinalReport = async (req, res, next) => {
   try {
-    if (!req.file) return next(new ApiError(400, 'No file uploaded'));
+    if (!req.file) return next(new ApiError(400, "No file uploaded"));
 
     const application = await Application.findById(req.params.id)
-  .populate('student')
-  .populate('trainingPost');
-    if (!application) return next(new ApiError(404, 'Application not found'));
+      .populate("student")
+      .populate("trainingPost");
+    if (!application) return next(new ApiError(404, "Application not found"));
 
     const student = application.student;
     const trainingPost = application.trainingPost;
 
     // تحقق من حالة التدريب
-    if (student.trainingStatus !== 'IN_TRAINING') {
-      return next(new ApiError(400, 'Student must be in training to submit a final report'));
+    if (student.trainingStatus !== "IN_TRAINING") {
+      return next(
+        new ApiError(
+          400,
+          "Student must be in training to submit a final report"
+        )
+      );
     }
 
     // تحقق من مدة التدريب
-    const durationWeeks = trainingPost.duration ; // افتراض أن المدة هي 6 أسابيع إذا لم يتم تحديدها
+    const durationWeeks = trainingPost.duration; // افتراض أن المدة هي 6 أسابيع إذا لم يتم تحديدها
     const startDate = application.createdAt; // تاريخ بداية التدريب
     const currentDate = new Date();
 
-    const weeksElapsed = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24 * 7)); // حساب الأسابيع المنقضية
+    const weeksElapsed = Math.floor(
+      (currentDate - startDate) / (1000 * 60 * 60 * 24 * 7)
+    ); // حساب الأسابيع المنقضية
 
     if (weeksElapsed < durationWeeks) {
-      return next(new ApiError(400, `You cannot submit the final report until ${durationWeeks} weeks of training have passed`));
+      return next(
+        new ApiError(
+          400,
+          `You cannot submit the final report until ${durationWeeks} weeks of training have passed`
+        )
+      );
     }
 
     application.finalReport = req.file.path;
     await application.save();
 
-    ApiResponse.success(res, 'Final report submitted successfully', { application });
+    ApiResponse.success(res, "Final report submitted successfully", {
+      application,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //-------------------------------------------------------------------
 
-//تعديل اخر نسخه 
+//تعديل اخر نسخه
 // 📂 controllers/companyController.js (نسخة نهائية محدثة ومُنظمة)
 /*
 const fs = require('fs');
@@ -405,11 +451,6 @@ exports.submitActivityReport = async (req, res, next) => {
 };
 
 */
-
-
-
-
-
 
 /*const Company = require('../models/Company');
 const User = require('../models/User');

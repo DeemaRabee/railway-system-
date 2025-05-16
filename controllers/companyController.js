@@ -162,7 +162,7 @@ exports.getCompanyApplications = async (req, res, next) => {
     const applications = await Application.find({
       trainingPost: { $in: postIds },
     })
-      .populate("student", "name universityId department")
+      .populate("student", "name universityId department studentId")
       .populate("trainingPost", "title duration")
       .sort({ createdAt: -1 });
 

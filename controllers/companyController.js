@@ -79,19 +79,19 @@ exports.getCompanyProfile = async (req, res, next) => {
 // @access  Private/Company
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { name, phone, location, fieldOfWork, newPassword } = req.body;
+    const { name, phone, location, fieldOfWork } = req.body;
     const company = await Company.findOne({ user: req.user.id });
     if (!company) return next(new ApiError(404, "Company profile not found"));
 
-    const user = await User.findById(req.user.id).select("+password");
+    //const user = await User.findById(req.user.id).select("+password");
     // تحديث كلمة المرور إن وُجدت
-    if (newPassword) {
+    /*if (newPassword) {
       user.password = newPassword;
       user.passwordChangedAt = Date.now();
       await user.save();
 
       logger.info(`Password updated for company: ${user.email}`);
-    }
+    }*/
 
     if (req.file) {
       company.profilePicture = req.file.path;

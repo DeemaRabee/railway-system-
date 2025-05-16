@@ -14,7 +14,7 @@ const logger = require('../utils/logger');
 // @desc    الحصول على جميع الطلاب داخل قسم رئيس القسم
 // @route   GET /api/department-heads/students
 // @access  Private/DepartmentHead
-exports.getDepartmentStudents = async (req, res, next) => {
+/*exports.getDepartmentStudents = async (req, res, next) => {
   try {
     const departmentHead = await DepartmentHead.findOne({ user: req.user.id });
     if (!departmentHead) return next(new ApiError(404, 'Department head profile not found'));
@@ -24,7 +24,62 @@ exports.getDepartmentStudents = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};*/
+// @desc    الحصول على جميع الطلاب داخل قسم رئيس القسم
+// @route   GET /api/department-heads/students
+// @access  Private/DepartmentHead
+exports.getDepartmentStudents = async (req, res, next) => {
+  try {
+    const departmentHead = await DepartmentHead.findOne({ user: req.user.id });
+    if (!departmentHead) {
+      return next(new ApiError(404, 'Department head profile not found'));
+    }
+
+    // 1. نحصل على جميع طلاب نفس القسم
+    const students = await Student.find({ department: departmentHead.department }).sort({ name: 1 });
+
+    const studentIds = students.map((s) => s._id);
+
+    // 2. نحصل على التطبيقات المرتبطة بهؤلاء الطلاب
+    const applications = await Application.find({
+      student: { $in: studentIds },
+      status: 'APPROVED' // جلب التطبيقات الموافق عليها فقط (اختياري)
+    })
+      .populate({
+        path: 'trainingPost',
+        populate: { path: 'company', select: 'name' }, // لجلب اسم الشركة
+        select: 'title company'
+      })
+      .select('student activityReports finalReport officialDocument trainingPost');
+
+    // 3. ربط كل طالب بالتطبيق الخاص به (إن وجد)
+    const studentsWithDetails = students.map((student) => {
+      const app = applications.find((a) => a.student.toString() === student._id.toString());
+
+      return {
+        ...student.toObject(),
+        training: app
+          ? {
+              trainingTitle: app.trainingPost?.title || null,
+              companyName: app.trainingPost?.company?.name || null,
+              activityReports: app.activityReports || [],
+              finalReport: app.finalReport || null,
+              officialDocument: app.officialDocument || null
+            }
+          : null
+      };
+    });
+
+    // 4. إرسال الريسبونس
+    ApiResponse.success(res, 'Department students retrieved successfully', {
+      count: students.length,
+      students: studentsWithDetails
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 // @desc    الحصول على طلبات الطلاب الذين يحتاجون وثيقة رسمية
 // @route   GET /api/department-heads/applications/pending

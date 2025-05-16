@@ -47,14 +47,57 @@ const studentsData = [
     department: 'AI',
     completedHours: 84,
     password: 'O123456*'
+  },
+  {
+    studentId: 2267877,
+    name: ' Ali Khaled ',
+    department: 'SW',
+    completedHours: 84,
+    password: 'O123456*'
+  },
+  {
+    studentId: 2264356,
+    name: ' Leen Ahmad ',
+    department: 'SW',
+    completedHours: 84,
+    password: 'O123456*'
+  },
+  {
+    studentId: 2264333,
+    name: ' Yara Zaid ',
+    department: 'SW',
+    completedHours: 84,
+    password: 'O123456*'
+  },
+  {
+    studentId: 2137583,
+    name: ' Malak Ali ',
+    department: 'BIT',
+    completedHours: 99,
+    password: 'O123456*'
+  },
+  {
+    studentId: 2345467,
+    name: ' Noor Rabee ',
+    department: 'BIT',
+    completedHours: 100,
+    password: 'O123456*'
+  },
+  {
+    studentId: 2021230,
+    name: ' Ruba Yaser ',
+    department: 'SW',
+    completedHours: 129,
+    password: 'O123456*'
   }
+
 ];
 
 const seedStudents = async () => {
   try {
-    await Student.deleteMany({});
-    await User.deleteMany({ role: 'student' });
-    console.log('Previous student data cleared');
+   // await Student.deleteMany({});
+    //await User.deleteMany({ role: 'student' });
+    //console.log('Previous student data cleared');
 
     /*for (const studentData of studentsData) {
       const hashedPassword = await bcrypt.hash(studentData.password, 10);

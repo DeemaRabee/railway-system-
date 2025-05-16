@@ -13,7 +13,7 @@ const {
   loginStudent,
   loginDepartmentHead,
   getMe,
-  //updatePassword,
+  updatePassword,
   forgotPassword,
   resetPassword
 } = require('../controllers/authController');
@@ -119,7 +119,7 @@ router.put('/resetpassword/:resettoken', resetPassword);
 router.get('/me', protect, getMe);
 
 // ✅ تحديث كلمة المرور (فقط الشركات)
-//router.put('/updatepassword', protect, restrictTo('company'), validate(updatePasswordSchema), updatePassword);
+router.put('/updatepassword', protect, restrictTo('company'), validate(updatePasswordSchema), updatePassword);
 
 // —————————————————————————
 

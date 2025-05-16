@@ -298,7 +298,7 @@ exports.getMe = async (req, res, next) => {
 // @desc    Update Password
 // @route   PUT /api/auth/updatepassword
 // @access  Private
-/*
+
 exports.updatePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -320,7 +320,7 @@ exports.updatePassword = async (req, res, next) => {
     next(error);
   }
 };
-*/
+
 // ———————————————————————————————————
 
 // @desc    Forgot Password

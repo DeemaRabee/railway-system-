@@ -20,34 +20,7 @@ const connectDB = async () => {
 };
 
 const studentsData = [
-  {
-    studentId: 2134567,
-    name: 'Deema Rabee Tawfiq Abu Hassouneh',
-    department: 'SW',
-    completedHours: 95,
-    password: 'X123456*'
-  },
-  {
-    studentId: 2345678,
-    name: 'Ahmad Ased Rashieed Assad',
-    department: 'CIS',
-    completedHours: 87,
-    password: 'D123456*'
-  },
-  {
-    studentId: 3456789,
-    name: 'Mahmoud Jehad Hamdan Hadrab',
-    department: 'BIT',
-    completedHours: 92,
-    password: 'F123456*'
-  },
-  {
-    studentId: 2267890,
-    name: 'Mohammad Omar Mohd Almashagbeh',
-    department: 'AI',
-    completedHours: 84,
-    password: 'O123456*'
-  },
+ 
   {
     studentId: 2267877,
     name: ' Ali Khaled ',

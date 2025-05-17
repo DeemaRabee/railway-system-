@@ -279,6 +279,14 @@ exports.submitFinalReport = async (req, res, next) => {
 
     application.finalReportByCompany = req.file.path;
     await application.save();
+    if (
+      application.activityReports.length >= 2 &&
+      application.finalReportByStudent &&
+      application.finalReportByCompany
+    ) {
+      student.trainingStatus = 'COMPLETED';
+      await student.save();
+    }
 
     ApiResponse.success(res, "Final report submitted successfully", {
       application,

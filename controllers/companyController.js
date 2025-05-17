@@ -218,9 +218,10 @@ exports.submitActivityReport = async (req, res, next) => {
 
     const application = await Application.findById(req.params.id);
     if (!application) return next(new ApiError(404, "Application not found"));
-     if (application.status !== 'in training') {
-  return next(new ApiError(400, 'Cannot submit report unless student is in training'));
-}
+    // تحقق من أن الحالة APPROVED وهناك وثيقة رسمية
+    if (application.status !== 'APPROVED' || !application.officialDocument) {
+      return next(new ApiError(400, 'Cannot submit report unless student is approved and has an official document'));
+    }
 
     application.activityReports.push(req.file.path);
     await application.save();

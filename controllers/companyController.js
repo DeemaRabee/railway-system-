@@ -273,7 +273,7 @@ exports.submitFinalReport = async (req, res, next) => {
       );
     }
 
-    application.finalReport = req.file.path;
+    application.finalReportByCompany = req.file.path;
     await application.save();
 
     ApiResponse.success(res, "Final report submitted successfully", {

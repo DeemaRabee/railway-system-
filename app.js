@@ -131,11 +131,11 @@ if (process.env.NODE_ENV === "development") {
 
 // Rate limiting
 const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
-  message: "Too many requests from this IP, please try again in an hour!",
+  max: 50, // أو أي رقم يناسبك
+  windowMs: 2 * 60 * 1000, // دقيقتين
+  message: 'Too many requests from this IP, please try again in 2 minutes!'
 });
-app.use("/api", limiter);
+app.use('/api', limiter);
 
 // Body parser
 app.use(express.json({ limit: "10kb" }));

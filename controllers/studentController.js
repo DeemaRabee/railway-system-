@@ -130,7 +130,6 @@ exports.selectApplication = async (req, res, next) => {
     next(error);
   }
 };
-
 // @desc    تقديم تقرير تدريب نهائي
 // @route   POST /api/students/training/report
 // @access  Private/Student
@@ -160,10 +159,10 @@ exports.submitFinalReport = async (req, res, next) => {
       return next(new ApiError(400, `You cannot submit the final report until ${durationWeeks} weeks of training have passed`));
     }
 
-    application.finalReport = req.file.path;
+    application.finalReportByStudent = req.file.path;
     await application.save();
 
-    if (application.activityReports.length >= 2 && application.finalReport) {
+    if (application.activityReports.length >= 2 && application.finalReportByStudent) {
       student.trainingStatus = 'COMPLETED';
       await student.save();
     }
@@ -174,8 +173,6 @@ exports.submitFinalReport = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 
 

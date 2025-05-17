@@ -33,7 +33,8 @@ const applicationSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-  finalReport: String,
+  finalReportByStudent: String,
+  finalReportByCompany: String,
   createdAt: {
     type: Date,
     default: Date.now

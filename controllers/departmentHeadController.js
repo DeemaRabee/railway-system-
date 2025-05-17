@@ -25,55 +25,60 @@ const logger = require('../utils/logger');
     next(error);
   }
 };*/
-// @desc    الحصول على جميع الطلاب داخل قسم رئيس القسم
+// @desc    الحصول على جميع الطلاب داخل قسم رئيس القسم مع الطلبات والتقارير
 // @route   GET /api/department-heads/students
 // @access  Private/DepartmentHead
 exports.getDepartmentStudents = async (req, res, next) => {
   try {
     const departmentHead = await DepartmentHead.findOne({ user: req.user.id });
-    if (!departmentHead) {
+    if (!departmentHead)
       return next(new ApiError(404, 'Department head profile not found'));
-    }
 
-    // 1. نحصل على جميع طلاب نفس القسم
     const students = await Student.find({ department: departmentHead.department }).sort({ name: 1 });
 
-    const studentIds = students.map((s) => s._id);
-
-    // 2. نحصل على التطبيقات المرتبطة بهؤلاء الطلاب
-    const applications = await Application.find({
-      student: { $in: studentIds },
-      status: 'APPROVED' // جلب التطبيقات الموافق عليها فقط (اختياري)
-    })
-      .populate({
-        path: 'trainingPost',
-        populate: { path: 'company', select: 'name' }, // لجلب اسم الشركة
-        select: 'title company'
-      })
-      .select('student activityReports finalReport officialDocument trainingPost');
-
-    // 3. ربط كل طالب بالتطبيق الخاص به (إن وجد)
-    const studentsWithDetails = students.map((student) => {
-      const app = applications.find((a) => a.student.toString() === student._id.toString());
-
-      return {
-        ...student.toObject(),
-        training: app
-          ? {
-              trainingTitle: app.trainingPost?.title || null,
-              companyName: app.trainingPost?.company?.name || null,
-              activityReports: app.activityReports || [],
-              finalReport: app.finalReport || null,
-              officialDocument: app.officialDocument || null
+    const studentsWithApplications = await Promise.all(
+      students.map(async (student) => {
+        const applications = await Application.find({ student: student._id })
+          .populate({
+            path: 'trainingPost',
+            select: 'title duration location',
+            populate: {
+              path: 'company',
+              select: 'name location'
             }
-          : null
-      };
-    });
+          })
+          .lean();
 
-    // 4. إرسال الريسبونس
+        // تأكد من التنسيق الآمن عند غياب trainingPost أو الشركة
+        const safeApplications = applications.map(app => ({
+          id: app._id,
+          status: app.status,
+          cv: app.cv || null,
+          officialDocument: app.officialDocument || null,
+          activityReports: app.activityReports || [],
+          finalReportByStudent: app.finalReportByStudent || null,
+          finalReportByCompany: app.finalReportByCompany || null,
+          trainingPost: app.trainingPost ? {
+            title: app.trainingPost.title,
+            duration: app.trainingPost.duration,
+            location: app.trainingPost.location,
+            company: app.trainingPost.company ? {
+              name: app.trainingPost.company.name,
+              location: app.trainingPost.company.location
+            } : null
+          } : null
+        }));
+
+        return {
+          ...student.toObject(),
+          applications: safeApplications.length > 0 ? safeApplications : []
+        };
+      })
+    );
+
     ApiResponse.success(res, 'Department students retrieved successfully', {
       count: students.length,
-      students: studentsWithDetails
+      students: studentsWithApplications
     });
   } catch (error) {
     next(error);

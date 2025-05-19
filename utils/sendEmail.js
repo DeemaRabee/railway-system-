@@ -40,10 +40,21 @@ const sendEmail = async (options) => {
   });
 
   const mailOptions = {
-    from: '"Your App Name" <your@email.com>',
+    from: `"Your App Name" <${process.env.EMAIL_FROM}>`,
     to: options.email,
-    subject: options.subject,
-    text: options.message,
+   subject: "Reset Your Password - Training System",
+text: `Hello 👋,
+
+You recently requested to reset your password for your Training System account.
+
+Please click the link below to reset your password:
+
+${options.resetUrl}
+
+Thanks,
+The Training System Team 💼
+`
+
   };
 
   await transporter.sendMail(mailOptions);

@@ -43,7 +43,8 @@ const sendEmail = async (options) => {
     from: `"Your App Name" <${process.env.EMAIL_FROM}>`,
     to: options.email,
    subject: "Reset Your Password - Training System",
-text: `Hello 👋,
+    text: options.message  
+/*text: `Hello 👋,
 
 You recently requested to reset your password for your Training System account.
 
@@ -53,7 +54,7 @@ ${options.resetUrl}
 
 Thanks,
 The Training System Team 💼
-`
+`*/
 
   };
 

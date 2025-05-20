@@ -162,7 +162,7 @@ exports.submitFinalReport = async (req, res, next) => {
     application.finalReportByStudent = req.file.path;
     await application.save();
 
-    if (application.activityReports.length >= 2 && application.finalReportByStudent && application.finalReportByCompany) {
+    if (application.activityReports.length  && application.finalReportByStudent && application.finalReportByCompany) {
       student.trainingStatus = 'COMPLETED';
       await student.save();
     }

@@ -280,7 +280,7 @@ exports.submitFinalReport = async (req, res, next) => {
     application.finalReportByCompany = req.file.path;
     await application.save();
     if (
-      application.activityReports.length  &&
+      application.activityReports  &&
       application.finalReportByStudent &&
       application.finalReportByCompany
     ) {

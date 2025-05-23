@@ -25,6 +25,17 @@ const trainingPostSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'Available until date is required']
   },
+  startDate: {
+  type: Date,
+  required: [true, 'Training start date is required'],
+  validate: {
+    validator: function(value) {
+      // فقط تحقق إذا الـ doc جديد أو تم تعديله
+      return value > new Date();
+    },
+    message: 'Start date must be a future date'
+  }
+},
   status: {
     type: String,
     enum: ['APPROVED', 'REJECTED'],

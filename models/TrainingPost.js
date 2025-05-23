@@ -36,6 +36,11 @@ const trainingPostSchema = new mongoose.Schema({
     message: 'Start date must be a future date'
   }
 },
+  isDeleted: {
+  type: Boolean,
+  default: false
+},
+
   status: {
     type: String,
     enum: ['APPROVED', 'REJECTED'],

@@ -15,7 +15,7 @@ const Application = require('../models/Application');
 // @access  Private/Company
 exports.createTrainingPost = async (req, res, next) => {
   try {
-    const { title, duration, location, availableUntil, description } = req.body;
+    const { title, duration, startDate, location, availableUntil, description } = req.body;
 
     const company = await Company.findOne({ user: req.user.id });
     if (!company) return next(new ApiError(404, 'Company profile not found'));
@@ -23,6 +23,15 @@ exports.createTrainingPost = async (req, res, next) => {
     if (![6, 8].includes(duration)) {
       return next(new ApiError(400, 'Duration must be either 6 or 8 weeks'));
     }
+    if (!startDate) {
+  return next(new ApiError(400, 'Start date is required'));
+}
+
+const startDateObj = new Date(startDate);
+if (startDateObj <= new Date()) {
+  return next(new ApiError(400, 'Start date must be in the future'));
+}
+
 
     const availableUntilDate = new Date(availableUntil);
     if (availableUntilDate <= new Date()) {
@@ -35,6 +44,7 @@ exports.createTrainingPost = async (req, res, next) => {
       duration,
       location,
       availableUntil: availableUntilDate,
+      startDate: startDateObj,
       description,
       status: 'APPROVED' // مباشرة معتمد
     });
@@ -99,7 +109,7 @@ exports.createTrainingPost = async (req, res, next) => {
 // @access  Private/Company
 exports.updatePost = async (req, res, next) => {
   try {
-    const { title, duration, location, availableUntil, description } = req.body;
+    const { title, duration, location, availableUntil, description, startDate  } = req.body;
 
     const company = await Company.findOne({ user: req.user.id });
     if (!company) return next(new ApiError(404, 'Company profile not found'));
@@ -112,10 +122,6 @@ exports.updatePost = async (req, res, next) => {
       return next(new ApiError(403, 'Not authorized to update this post'));
     }
 
-
-
-  
-
     if (duration && ![6, 8].includes(duration)) {
       return next(new ApiError(400, 'Duration must be either 6 or 8 weeks'));
     }
@@ -125,12 +131,21 @@ exports.updatePost = async (req, res, next) => {
       if (availableUntilDate <= new Date()) {
         return next(new ApiError(400, 'Available until date must be in the future'));
       }
+      post.availableUntil = availableUntilDate;
+    }
+    // ✅ تحقق من startDate
+    if (startDate) {
+      const startDateObj = new Date(startDate);
+      if (startDateObj <= new Date()) {
+        return next(new ApiError(400, 'Start date must be in the future'));
+      }
+      post.startDate = startDateObj;
     }
 
     post.title = title || post.title;
     post.duration = duration || post.duration;
     post.location = location || post.location;
-    post.availableUntil = availableUntil ? new Date(availableUntil) : post.availableUntil;
+    //post.availableUntil = availableUntil ? new Date(availableUntil) : post.availableUntil;
     post.description = description || post.description;
 
     await post.save();

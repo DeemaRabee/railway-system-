@@ -27,7 +27,7 @@ const logger = require('../utils/logger');
 };*/
 
 // @desc    الحصول على جميع الشركات
-// @route   GET /api/companies
+// @route   GET /api/department-heads/companies
 // @access  Private/DepartmentHead
 exports.getCompanies = async (req, res, next) => {
   try {

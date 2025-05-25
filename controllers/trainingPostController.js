@@ -15,6 +15,7 @@ const Application = require('../models/Application');
 // @access  Private/Company
 exports.createTrainingPost = async (req, res, next) => {
   try {
+    console.log("🔥 Received req.body:", req.body);
     const { title, duration, startDate, location, availableUntil, description } = req.body;
 
     const company = await Company.findOne({ user: req.user.id });

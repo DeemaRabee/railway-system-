@@ -149,7 +149,7 @@ exports.submitFinalReport = async (req, res, next) => {
     // تحقُق من مدة التدريب
   
     const trainingPost = application.trainingPost;
-    const durationWeeks = trainingPost.duration ||6 ; // افتراضيًا 6 أسابيع إذا لم تكن موجودة
+    const durationWeeks = trainingPost.duration  ; 
     //const startDate = application.createdAt; // تاريخ بداية التدريب
     const startDate =new Date(application.trainingPost.startDate);
     const currentDate = new Date();

@@ -23,20 +23,20 @@ exports.createTrainingPost = async (req, res, next) => {
     if (![6, 8].includes(duration)) {
       return next(new ApiError(400, 'Duration must be either 6 or 8 weeks'));
     }
-    
+    if (!startDate) {
+      return next(new ApiError(400, 'Start date is required'));
+    }
 
-if (typeof startDate !== 'string' || !startDate.trim()) {
-  return next(new ApiError(400, 'Start date is required'));
-}
+    // التأكد من أن startDate يمكن تحويله إلى تاريخ صالح
+    const startDateObj = new Date(`${startDate}T12:00:00`);
+    if (isNaN(startDateObj.getTime())) {
+      return next(new ApiError(400, 'nvalid start date format'));
+    }
 
-const startDateObj = new Date(${startDate}T12:00:00);
-if (isNaN(startDateObj)) {
-  return next(new ApiError(400, 'Invalid start date format'));
-}
+    if (startDateObj <= new Date()) {
+      return next(new ApiError(400, 'Start date must be in the future'));
+    }
 
-if (startDateObj <= new Date()) {
-  return next(new ApiError(400, 'Start date must be in the future'));
-} 
 
     const availableUntilDate = new Date(availableUntil);
     if (availableUntilDate <= new Date()) {

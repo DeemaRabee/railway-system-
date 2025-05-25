@@ -4,6 +4,7 @@ const express = require('express');
 const { protect, restrictTo } = require('../middleware/auth');
 const uploadDepartmentOfficialDocument = require('../middleware/uploadOfficialDocument'); // ✅ ميدل وير رفع وثيقة رسمية
 const {
+  getCompanies,
   getDepartmentStudents,
   getPendingApplications,
   submitOfficialDocument
@@ -18,7 +19,8 @@ router.use(restrictTo('department-head'));
 
 // —————————————————————————
 // ✅ مسارات رئيس القسم
-
+//الحصول على كل الشركات 
+router.get('/companies', getCompanies);
 // ➡️ الحصول على طلاب القسم
 router.get('/students', getDepartmentStudents);
 

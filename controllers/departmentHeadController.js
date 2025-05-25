@@ -41,7 +41,7 @@ exports.getDepartmentStudents = async (req, res, next) => {
         const applications = await Application.find({ student: student._id })
           .populate({
             path: 'trainingPost',
-            select: 'title duration location',
+            select: 'title duration location startDate',
             populate: {
               path: 'company',
               select: 'name location'
@@ -64,7 +64,8 @@ exports.getDepartmentStudents = async (req, res, next) => {
             location: app.trainingPost.location,
             company: app.trainingPost.company ? {
               name: app.trainingPost.company.name,
-              location: app.trainingPost.company.location
+              location: app.trainingPost.company.location,
+              startDate: app.trainingPost.startDate
             } : null
           } : null
         }));
@@ -109,7 +110,7 @@ exports.getPendingApplications = async (req, res, next) => {
       .populate('student', 'name universityId department gpa')
       .populate({
         path: 'trainingPost',
-        select: 'title duration',
+        select: 'title duration startDate',
         populate: { path: 'company', select: 'name location' }
       });
 

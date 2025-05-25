@@ -9,8 +9,8 @@ const uploadCompanyActivityReport = require("../middleware/uploadCompanyActivity
 const uploadCompanyFinalReport = require("../middleware/uploadCompanyFinalReport"); // لرفع التقرير النهائي
 
 const {
-  getCompanies,
-  getCompany,
+  //getCompanies,
+  //getCompany,
   updateProfile,
   getCompanyPosts,
   getCompanyApplications,

@@ -23,11 +23,12 @@ exports.createTrainingPost = async (req, res, next) => {
     if (![6, 8].includes(duration)) {
       return next(new ApiError(400, 'Duration must be either 6 or 8 weeks'));
     }
+    
+
+const startDateObj = new Date(startDate);
     if (!startDate) {
   return next(new ApiError(400, 'Start date is required'));
 }
-
-const startDateObj = new Date(startDate);
 if (startDateObj <= new Date()) {
   return next(new ApiError(400, 'Start date must be in the future'));
 }

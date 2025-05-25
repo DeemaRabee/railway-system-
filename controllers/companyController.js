@@ -156,6 +156,8 @@ exports.getCompanyPosts = async (req, res, next) => {
 exports.getCompanyApplications = async (req, res, next) => {
   try {
     const company = await Company.findOne({ user: req.user.id });
+    if (!company) return next(new ApiError(404, "Company not found"));
+
     const posts = await TrainingPost.find({ company: company._id });
     const postIds = posts.map((post) => post._id);
 
@@ -261,7 +263,8 @@ exports.submitFinalReport = async (req, res, next) => {
 
     // تحقق من مدة التدريب
     const durationWeeks = trainingPost.duration; // افتراض أن المدة هي 6 أسابيع إذا لم يتم تحديدها
-    const startDate = application.createdAt; // تاريخ بداية التدريب
+    //const startDate = application.createdAt; // تاريخ بداية التدريب
+    const startDate = new Date(trainingPost.startDate);
     const currentDate = new Date();
 
     const weeksElapsed = Math.floor(
@@ -276,11 +279,15 @@ exports.submitFinalReport = async (req, res, next) => {
         )
       );
     }
+     // 🔴 شرط وجود تقرير نشاط واحد على الأقل
+    if (!application.activityReports || application.activityReports.length === 0) {
+      return next(new ApiError(400, "At least one activity report must be submitted before uploading the final report."));
+    }
 
     application.finalReportByCompany = req.file.path;
     await application.save();
     if (
-      application.activityReports  &&
+       application.activityReports?.length > 0  &&
       application.finalReportByStudent &&
       application.finalReportByCompany
     ) {

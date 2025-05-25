@@ -29,14 +29,56 @@ const logger = require('../utils/logger');
 // @desc    الحصول على جميع الشركات
 // @route   GET /api/department-heads/companies
 // @access  Private/DepartmentHead
-exports.getCompanies = async (req, res, next) => {
+/*exports.getCompanies = async (req, res, next) => {
   try {
     const companies = await Company.find().populate('user', 'email');
     ApiResponse.success(res, 'Companies retrieved successfully', { count: companies.length, companies });
   } catch (error) {
     next(error);
   }
+};*/
+// @desc    الحصول على جميع الشركات
+// @route   GET /api/department-heads/companies
+// @access  Private/DepartmentHead
+exports.getCompanies = async (req, res, next) => {
+  try {
+    const companies = await Company.find().populate('user', 'email');
+
+    const companyData = await Promise.all(companies.map(async (company) => {
+      // عدد البوستات التدريبية الخاصة بالشركة
+      const postCount = await TrainingPost.countDocuments({ company: company._id });
+
+      // نجيب كل بوستات الشركة (حقل _id فقط)
+      const posts = await TrainingPost.find({ company: company._id }, '_id');
+      const postIds = posts.map(post => post._id);
+
+      // نجيب الطلاب الذين لديهم officialDocument في التطبيقات المرتبطة بهذه البوستات
+      const studentIds = await Application.distinct('student', {
+        trainingPost: { $in: postIds },
+        officialDocument: { $exists: true, $ne: null }  // شرط وجود الوثيقة
+      });
+
+      const studentCount = studentIds.length;
+
+      return {
+        _id: company._id,
+        name: company.name,
+        joinedAt: company.createdAt,
+        postCount,
+        studentCount,
+        user: company.user,
+      };
+    }));
+
+    ApiResponse.success(res, 'Companies retrieved successfully', {
+      count: companyData.length,
+      companies: companyData,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 
 // @desc    الحصول على جميع الطلاب داخل قسم رئيس القسم مع الطلبات والتقارير

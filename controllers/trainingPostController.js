@@ -24,12 +24,13 @@ exports.createTrainingPost = async (req, res, next) => {
     if (![6, 8].includes(duration)) {
       return next(new ApiError(400, 'Duration must be either 6 or 8 weeks'));
     }
-    if (!startDate) {
+   /* if (!startDate) {
       return next(new ApiError(400, 'Start date is required'));
-    }
+    }*/
 
     // التأكد من أن startDate يمكن تحويله إلى تاريخ صالح
     const startDateObj = new Date(`${startDate}T12:00:00`);
+
     if (isNaN(startDateObj.getTime())) {
       return next(new ApiError(400, 'nvalid start date format'));
     }

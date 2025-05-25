@@ -83,7 +83,7 @@ exports.getStudentApplications = async (req, res, next) => {
     const applications = await Application.find({ student: student._id })
       .populate({
         path: 'trainingPost',
-        select: 'title duration location',
+        select: 'title duration location startDate',
         populate: { path: 'company', select: 'name' }
       })
       .sort({ createdAt: -1 });
@@ -144,13 +144,14 @@ exports.submitFinalReport = async (req, res, next) => {
       return next(new ApiError(400, 'You must be in training to submit a final report'));
     }
 
-    const application = await Application.findOne({ student: student._id, selectedByStudent: true }).populate('trainingPost');;
+    const application = await Application.findOne({ student: student._id, selectedByStudent: true }).populate('trainingPost');
     if (!application) return next(new ApiError(404, 'No selected application found'));
     // تحقُق من مدة التدريب
   
     const trainingPost = application.trainingPost;
     const durationWeeks = trainingPost.duration ||6 ; // افتراضيًا 6 أسابيع إذا لم تكن موجودة
-    const startDate = application.createdAt; // تاريخ بداية التدريب
+    //const startDate = application.createdAt; // تاريخ بداية التدريب
+    const startDate =new Date(application.trainingPost.startDate);
     const currentDate = new Date();
    
     const weeksElapsed = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24 * 7)); // حساب الأسابيع المنقضية
@@ -162,7 +163,7 @@ exports.submitFinalReport = async (req, res, next) => {
     application.finalReportByStudent = req.file.path;
     await application.save();
 
-    if (application.activityReports && application.finalReportByStudent && application.finalReportByCompany) {
+    if (application.activityReports?.length > 0 && application.finalReportByStudent && application.finalReportByCompany) {
       student.trainingStatus = 'COMPLETED';
       await student.save();
     }

@@ -163,7 +163,7 @@ exports.getCompanyApplications = async (req, res, next) => {
       trainingPost: { $in: postIds },
     })
       .populate("student", "name universityId department studentId")
-      .populate("trainingPost", "title duration")
+      .populate("trainingPost", "title duration startDate")
       .sort({ createdAt: -1 });
 
     ApiResponse.success(res, "Applications retrieved successfully", {

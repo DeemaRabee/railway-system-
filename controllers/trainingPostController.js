@@ -181,11 +181,11 @@ if (applicationsCount > 0) {
 }
 
 
-    //await post.deleteOne();
+    await post.deleteOne();
     
 // ✅ حطه هيك:
-post.isDeleted = true;
-await post.save();
+//post.isDeleted = true;
+//await post.save();
 
     logger.info(`Company ${company.name} deleted training post: ${post._id}`);
     ApiResponse.success(res, 'Training post deleted successfully', null);

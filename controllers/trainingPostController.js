@@ -25,14 +25,18 @@ exports.createTrainingPost = async (req, res, next) => {
     }
     
 
-const startDateObj = new Date(startDate);
-    if (!startDate) {
+if (typeof startDate !== 'string' || !startDate.trim()) {
   return next(new ApiError(400, 'Start date is required'));
 }
-if (startDateObj <= new Date()) {
-  return next(new ApiError(400, 'Start date must be in the future'));
+
+const startDateObj = new Date(${startDate}T12:00:00);
+if (isNaN(startDateObj)) {
+  return next(new ApiError(400, 'Invalid start date format'));
 }
 
+if (startDateObj <= new Date()) {
+  return next(new ApiError(400, 'Start date must be in the future'));
+} 
 
     const availableUntilDate = new Date(availableUntil);
     if (availableUntilDate <= new Date()) {

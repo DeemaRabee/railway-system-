@@ -31,9 +31,9 @@ exports.createTrainingPost = async (req, res, next) => {
     // التأكد من أن startDate يمكن تحويله إلى تاريخ صالح
     const startDateObj = new Date(startDate);
 
-    /*if (isNaN(startDateObj.getTime())) {
+    if (isNaN(startDateObj.getTime())) {
       return next(new ApiError(400, 'nvalid start date format'));
-    }*/
+    }
 
     if (startDateObj <= new Date()) {
       return next(new ApiError(400, 'Start date must be in the future'));

@@ -25,6 +25,20 @@ const logger = require('../utils/logger');
     next(error);
   }
 };*/
+
+// @desc    الحصول على جميع الشركات
+// @route   GET /api/companies
+// @access  Private/DepartmentHead
+exports.getCompanies = async (req, res, next) => {
+  try {
+    const companies = await Company.find().populate('user', 'email');
+    ApiResponse.success(res, 'Companies retrieved successfully', { count: companies.length, companies });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // @desc    الحصول على جميع الطلاب داخل قسم رئيس القسم مع الطلبات والتقارير
 // @route   GET /api/department-heads/students
 // @access  Private/DepartmentHead

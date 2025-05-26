@@ -70,7 +70,7 @@ const logger = require('../utils/logger');
 exports.getCompanies = async (req, res, next) => {
   try {
     const companies = await Company.find()
-      .select('name user phone') // نجيب فقط الحقول المطلوبة
+      .select('name user phone location createdAt fieldOfWork') // نجيب فقط الحقول المطلوبة
       .populate('user', 'email'); // نجيب الإيميل فقط من جدول المستخدمين
 
     const companyData = companies.map(company => ({
@@ -78,6 +78,9 @@ exports.getCompanies = async (req, res, next) => {
       name: company.name,
       email: company.user?.email || null,
       phone: company.phone || null,
+      location: company.location || null,
+       createdAt: company.createdAt || null,
+       fieldOfWork: company.fieldOfWork || null
     }));
 
     ApiResponse.success(res, 'Companies retrieved successfully', {

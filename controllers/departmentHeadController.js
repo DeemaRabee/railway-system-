@@ -2,6 +2,7 @@
 const DepartmentHead = require('../models/DepartmentHead');
 const Student = require('../models/Student');
 const Application = require('../models/Application');
+const Company = require('../models/Company');
 const ApiError = require('../utils/apiError');
 const ApiResponse = require('../utils/apiResponse');
 const logger = require('../utils/logger');
@@ -172,7 +173,7 @@ exports.getPendingApplications = async (req, res, next) => {
       selectedByStudent: true,
       officialDocument: { $exists: false }
     })
-      .populate('student', 'name universityId department gpa')
+      .populate('student', 'name universityId department')
       .populate({
         path: 'trainingPost',
         select: 'title duration',
